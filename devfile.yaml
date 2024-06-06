@@ -10,7 +10,7 @@ projects:
       remote: origin
       revision: main
     remotes:
-      origin: https://github.com/cgruver/openshift-nested-containers.git
+      origin: https://github.com/cgruver/ocp-4-16-nested-containers.git
 - name: sam-cli-demo
   git:
     checkoutFrom:
