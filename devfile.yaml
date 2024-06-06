@@ -50,11 +50,10 @@ components:
         hostUsers: false
         securityContext:
           fsGroup: 0
-    container-overrides:
-      container-overrides: 
-        securityContext:
-          procMount:
-            Unmasked
+    container-overrides: 
+      securityContext:
+        procMount:
+          Unmasked
   container: 
     image: quay.io/cgruver0/che/nested-userns:latest
     memoryLimit: 6Gi
