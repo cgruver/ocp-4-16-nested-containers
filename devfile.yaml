@@ -1,0 +1,120 @@
+schemaVersion: 2.2.0
+attributes:
+  controller.devfile.io/storage-type: per-workspace
+metadata:
+  name: che-nested-containers-demo
+projects:
+- name: openshift-nested-containers
+  git:
+    checkoutFrom:
+      remote: origin
+      revision: main
+    remotes:
+      origin: https://github.com/cgruver/openshift-nested-containers.git
+- name: sam-cli-demo
+  git:
+    checkoutFrom:
+      remote: origin
+      revision: main
+    remotes:
+      origin: https://github.com/aws/aws-sam-cli-app-templates.git
+- name: quarkus-dev-services-demo
+  git:
+    checkoutFrom:
+      remote: origin
+      revision: main
+    remotes:
+      origin: https://github.com/cgruver/quarkus-kafka.git
+- name: localstack-demo
+  git:
+    checkoutFrom:
+      remote: origin
+      revision: main
+    remotes:
+      origin: https://github.com/localstack/localstack-demo.git
+- name: ansible-demo
+  git:
+    checkoutFrom:
+      remote: origin
+      revision: main
+    remotes:
+      origin: https://github.com/cgruver/che-ansible-demo.git
+components:
+- name: dev-tools
+  attributes:
+    pod-overrides:
+      metadata:
+        annotations:
+          io.kubernetes.cri-o.Devices: "/dev/fuse,/dev/net/tun"
+      spec:
+        hostUsers: false
+        securityContext:
+          fsGroup: 0
+    container-overrides:
+      container-overrides: 
+        securityContext:
+          procMount:
+            Unmasked
+  container: 
+    image: quay.io/cgruver0/che/nested-userns:latest
+    memoryLimit: 6Gi
+    mountSources: true
+    env:
+    - name: SHELL
+      value: "/bin/zsh"
+    - name: VSCODE_DEFAULT_WORKSPACE
+      value: "/projects/openshift-nested-containers/my-workspace.code-workspace"
+    - name: DOCKER_HOST
+      value: "unix:///tmp/podman.sock"
+    - name: CONTAINER_HOST
+      value: "unix:///tmp/podman.sock"
+    - name: TESTCONTAINERS_RYUK_DISABLED
+      value: "true" 
+    - name: TESTCONTAINERS_CHECKS_DISABLE
+      value: "true"
+    - name: DOCKER_SOCK
+      value: /tmp/podman.sock
+    - name: DOCKER_CMD
+      value: podman
+- volume:
+    size: 10Gi
+  name: projects
+- name: oc-cli
+  container:
+    args:
+      - '-c'
+      - >-
+        mkdir -p /projects/bin && cp /usr/bin/oc /projects/bin/oc && cp /usr/bin/kubectl /projects/bin/kubectl
+    command:
+      - /bin/bash
+    image: image-registry.openshift-image-registry.svc:5000/openshift/cli:latest
+    sourceMapping: /projects
+    mountSources: true
+    memoryLimit: 256M
+commands:
+- exec:
+    label: "Start Podman Service"
+    component: dev-tools
+    workingDir: ${PROJECTS_ROOT}
+    commandLine: "unset CONTAINER_HOST && podman --log-level debug system service --time=0 unix:///tmp/podman.sock"
+    group:
+      kind: run
+      isDefault: true
+  id: start-podman
+- exec:
+    label: "Start Localstack Service"
+    component: dev-tools
+    workingDir: ${PROJECTS_ROOT}
+    commandLine: "mkdir -p ${HOME}/.cache/localstack/volume && podman run --rm --name localstack_main -v ${HOME}/.cache/localstack/volume:/var/lib/localstack -v ${DOCKER_SOCK}:${DOCKER_SOCK} -p 0.0.0.0:4566:4566 -p 0.0.0.0:4510-4559:4510-4559 -e ACTIVATE_PRO=0 -e HOSTNAME=${HOSTNAME} -e LOCALSTACK_CLI=1 -e DEBUG=1 -e DOCKER_HOST=${DOCKER_HOST} -e SET_TERM_HANDLER=1 docker.io/localstack/localstack:latest"
+    group:
+      kind: run
+      isDefault: true
+  id: start-localstack
+- apply:
+    component: oc-cli
+    label: Copy OpenShift CLI
+  id: cp-oc-cli
+events:
+  preStart:
+    - cp-oc-cli
+
