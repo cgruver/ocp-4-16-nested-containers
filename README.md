@@ -81,7 +81,7 @@ systemd:
   units:
   - contents: |
       [Unit]
-      Description=Modify SeLinux Type container_t to allow devpts_t and tmpfs_t
+      Description=Modify SeLinux Type container_engine_t
       DefaultDependencies=no
       After=kubelet.service
 
