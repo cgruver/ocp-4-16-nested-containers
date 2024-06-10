@@ -16,12 +16,16 @@ spec:
  containerRuntimeConfig:
    defaultRuntime: crun
 EOF
+```
 
+```bash
 oc patch FeatureGate cluster --type merge --patch '{"spec":{"featureSet":"CustomNoUpgrade","customNoUpgrade":{"enabled":["ProcMountType","UserNamespacesSupport"]}}}'
+```
 
+```bash
 cat << EOF | butane | oc apply -f -
 variant: openshift
-version: 4.15.0
+version: 4.16.0
 metadata:
   labels:
     machineconfiguration.openshift.io/role: master
