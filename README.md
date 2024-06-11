@@ -50,6 +50,7 @@ storage:
         tun
         rtnl-link-bridge
         ipt_addrtype
+        ipt_MASQUERADE
   - path: /etc/nested_podman/nested_podman.te
     mode: 0644
     overwrite: true
@@ -124,9 +125,8 @@ requiredDropCapabilities:
 - KILL
 - MKNOD
 runAsUser:
-  type: MustRunAsRange
-  uidRangeMax: 20000
-  uidRangeMin: 10000
+  type: MustRunAs
+  uid: 10000
 seLinuxContext:
   type: MustRunAs
   seLinuxOptions:
@@ -143,31 +143,6 @@ volumes:
 - secret
 - hostPath
 EOF
-```
-
-```bash
-module nested_containers 1.0;
-
-require {
-	type null_device_t;
-	type zero_device_t;
-	type urandom_device_t;
-	type random_device_t;
-	type container_file_t;
-	type container_engine_t;
-	type devtty_t;
-	type setfiles_t;
-	class chr_file { mounton read setattr write };
-	class sock_file mounton;
-}
-
-#============= container_engine_t ==============
-allow container_engine_t container_file_t:sock_file mounton;
-allow container_engine_t devtty_t:chr_file mounton;
-allow container_engine_t null_device_t:chr_file { mounton setattr };
-allow container_engine_t random_device_t:chr_file mounton;
-allow container_engine_t urandom_device_t:chr_file mounton;
-allow container_engine_t zero_device_t:chr_file mounton;
 ```
 
 ```bash
@@ -193,7 +168,7 @@ spec:
       openVSXURL: https://open-vsx.org
   containerRegistry: {}      
   devEnvironments:       
-    startTimeoutSeconds: 300
+    startTimeoutSeconds: 600
     secondsOfRunBeforeIdling: -1
     maxNumberOfWorkspacesPerUser: -1
     maxNumberOfRunningWorkspacesPerUser: 5

@@ -1,19 +1,24 @@
 {
 	"folders": [
 		{
-			"path": "."
+			"name": "openshift-nested-containers",
+			"path": "/projects/openshift-nested-containers"
 		},
 		{
-			"path": "../ansible-demo"
+			"name": "sam-cli-demo",
+			"path": "/projects/sam-cli-demo"
 		},
 		{
-			"path": "../quarkus-dev-services-demo"
+			"name": "quarkus-dev-services-demo",
+			"path": "/projects/quarkus-dev-services-demo"
 		},
 		{
-			"path": "../sam-cli-demo"
+			"name": "localstack-demo",
+			"path": "/projects/localstack-demo"
 		},
 		{
-			"path": "../localstack-demo"
+			"name": "ansible-demo",
+			"path": "/projects/ansible-demo"
 		}
 	],
 	"extensions": {
